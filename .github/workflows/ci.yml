@@ -31,10 +31,11 @@ jobs:
         run: |
           curl -L "https://github.com/mstorsjo/llvm-mingw/releases/download/$LLVM_MINGW_TAG/$LLVM_MINGW_NAME.tar.xz" -o "$RUNNER_TEMP/llvm-mingw.tar.xz"
           tar xJf "$RUNNER_TEMP/llvm-mingw.tar.xz" -C "$RUNNER_TEMP"
+          ls $RUNNER_TEMP
 
       - name: Build
         run: |
-          ls $RUNNER_TEMP
+          git submodule update --init --recursive
           make LLVM_MINGW_PATH=$RUNNER_TEMP/$LLVM_MINGW_NAME
 
       - name: Upload

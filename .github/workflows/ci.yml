@@ -37,16 +37,15 @@ jobs:
         run: |
           git submodule update --init --recursive
           make LLVM_MINGW_PATH=$RUNNER_TEMP/$LLVM_MINGW_NAME
+          mv build/mikuterm-x64/*.zip mikuterm-x64.zip
+          mv build/mikuterm-arm64/*.zip mikuterm-arm64.zip
+          mv build/mikuterm-x86/*.zip mikuterm-x86.zip
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: artifacts
-          path: |
-            - build/mikuterm-x64/mikuterm-*-win64.zip
-            - build/mikuterm-x64/mikuterm-*-win64.zip
-            - build/mikuterm-x64/mikuterm-*-win64.zip
-
+          path: *.zip
           if-no-files-found: error
 
   release:
@@ -61,62 +60,34 @@ jobs:
       - name: Download the disk images
         uses: actions/download-artifact@v4
         with:
-          pattern: image-*
+          pattern: *.zip
           merge-multiple: true
           path: artifacts
-
-      - name: Download the installer's system tarballs
-        uses: actions/download-artifact@v4
-        with:
-          pattern: system-*
-          merge-multiple: true
-          path: artifacts
-
-      - name: Download the apps
-        uses: actions/download-artifact@v4
-        with:
-          pattern: mikuterm-*
-          merge-multiple: true
-          path: app-artifacts
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: nightly-${{ github.run_number }}
-          name: Nightly Build ${{ github.run_number }}
-          prerelease: true
+          tag_name: build-${{ github.run_number }}
+          name: Build ${{ github.run_number }}
+          prerelease: false
 
           body: |
-            This is an automated nightly build. Not an official release.
+            mikuterm
+            ========
             
-            zedBSD OS
-            =========
+            `mikuterm` (Micro Unicode Terminal) is an SSH terminal for Windows,
+            featuring a Vulkan-accelerated X11 server for X-forwarding and an
+            on-demand graphical SFTP client.
             
-            Mainline Targets (Wayland):
-            | Image          | CPU     | Machine          | File                     | Description   |
-            |----------------|---------|------------------|--------------------------|---------------|
-            | x86_64         | x86_64  | UEFI PC          | `zedbsd-x86_64.img.gz`   | USB image     |
-            | Raspberry Pi 4 | Arm64   | Raspberry Pi 4   | `zedbsd-rpi4.img.gz`     | SD image      |
-            | Raspberry Pi 5 | Arm64   | Raspberry Pi 5   | `zedbsd-rpi5.img.gz`     | SD image      |
-            | VisionFive 2   | RISC-V  | VisionFive 2     | `zedbsd-vf2.img.gz`      | SD image      |
-
-            The installer of the x86_64 image installs `zedbsd-system-x86_64.tar` of a release that is not a prerelease.
-            
-            Retro Targets (X11 or console-only):
-            | Image          | CPU     | Machine          | File                     | Description                   |
-            |----------------|---------|------------------|--------------------------|-------------------------------|
-            | pc9801ns       | i386SX  | PC-9801NS/20     | `zedbsd-pc9801ns.img.gz` | IDE image (Head=4, Sector=17) |
-            | pc9821         | i486DX  | PC-9821          | `zedbsd-pc9821.img.gz`   | IDE image (Head=8, Sector=17) |
-            | macppc32       | PowerPC | PowerPC Mac (G4) | `zedbsd-macppc32.img.gz` | USB image [(How to boot)](https://github.com/awemorris/zedBSD/blob/main/docs/howto/powermac-boot.md) |
-            
-            Windows-ported Apps:
             | Name        | OS                | Description                                       |
             |-------------|-------------------|---------------------------------------------------|
-            | mikuterm    | Windows 11 x64    | SSH Terminal for Windows (Micro Unicode Terminal) |
+            | mikuterm    | Windows 11 x64    |                                                   |
+            | mikuterm    | Windows 11 arm64  |                                                   |
+            | mikuterm    | Windows 10 x86    |                                                   |
 
           files: |
-            artifacts/*.img.gz
-            artifacts/zedbsd-system-*.tar
-            app-artifacts/*.zip
+            artifacts/mikuterm-x64.zip
+            artifacts/mikuterm-x86.zip
+            artifacts/mikuterm-arm64.zip

@@ -29,14 +29,13 @@ jobs:
 
       - name: Install llvm-mingw
         run: |
-          curl -fsSL "https://github.com/mstorsjo/llvm-mingw/releases/download/$LLVM_MINGW_TAG/$LLVM_MINGW_NAME.tar.xz" -o "$RUNNER_TEMP/llvm-mingw.tar.xz"
-          echo "$LLVM_MINGW_SHA256  $RUNNER_TEMP/llvm-mingw.tar.xz" | sha256sum -c
-          tar -xJf "$RUNNER_TEMP/llvm-mingw.tar.xz" -C "$RUNNER_TEMP"
-          echo "LLVM_MINGW=$RUNNER_TEMP/$LLVM_MINGW_NAME" >> "$GITHUB_ENV"
+          curl -L "https://github.com/mstorsjo/llvm-mingw/releases/download/$LLVM_MINGW_TAG/$LLVM_MINGW_NAME.tar.xz" -o "$RUNNER_TEMP/llvm-mingw.tar.xz"
+          tar xJf "$RUNNER_TEMP/llvm-mingw.tar.xz" -C "$RUNNER_TEMP"
 
       - name: Build
         run: |
-          make LLVM_MINGW_PATH=$LLVM_MINGW
+          ls $RUNNER_TEMP
+          make LLVM_MINGW_PATH=$RUNNER_TEMP/$LLVM_MINGW_NAME
 
       - name: Upload
         uses: actions/upload-artifact@v4

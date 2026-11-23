@@ -1,0 +1,123 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-os:
+    name: Build ${{ matrix.platform }}
+    runs-on: ubuntu-24.04
+    env:
+      LLVM_MINGW_TAG: "20261104"
+      LLVM_MINGW_NAME: "llvm-mingw-20261104-ucrt-ubuntu-22.04-x86_64"
+      LLVM_MINGW_SHA256: "919380403de87dca3c581c2053230cd298af5e891286628ba0613b7fed370926"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake zip ninja-build
+
+      - name: Install llvm-mingw
+        run: |
+          curl -fsSL "https://github.com/mstorsjo/llvm-mingw/releases/download/$LLVM_MINGW_TAG/$LLVM_MINGW_NAME.tar.xz" -o "$RUNNER_TEMP/llvm-mingw.tar.xz"
+          echo "$LLVM_MINGW_SHA256  $RUNNER_TEMP/llvm-mingw.tar.xz" | sha256sum -c
+          tar -xJf "$RUNNER_TEMP/llvm-mingw.tar.xz" -C "$RUNNER_TEMP"
+          echo "LLVM_MINGW=$RUNNER_TEMP/$LLVM_MINGW_NAME" >> "$GITHUB_ENV"
+
+      # CMake takes the toolchain file by its absolute path.
+      - name: Build
+        run: |
+          cmake -S apps/terminal-win32 -B build/mikuterm-x64 -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/apps/terminal-win32/cmake/llvm-mingw-x86_64.cmake" \
+            -DLLVM_MINGW="$LLVM_MINGW"
+          cmake --build build/mikuterm-x64 --target zip -j4
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: mikuterm-win64
+          path: build/mikuterm-x64/mikuterm-*-win64.zip
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    needs:
+      - build-os
+      - build-apps
+    steps:
+      - name: Download the disk images
+        uses: actions/download-artifact@v4
+        with:
+          pattern: image-*
+          merge-multiple: true
+          path: artifacts
+
+      - name: Download the installer's system tarballs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: system-*
+          merge-multiple: true
+          path: artifacts
+
+      - name: Download the apps
+        uses: actions/download-artifact@v4
+        with:
+          pattern: mikuterm-*
+          merge-multiple: true
+          path: app-artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: nightly-${{ github.run_number }}
+          name: Nightly Build ${{ github.run_number }}
+          prerelease: true
+
+          body: |
+            This is an automated nightly build. Not an official release.
+            
+            zedBSD OS
+            =========
+            
+            Mainline Targets (Wayland):
+            | Image          | CPU     | Machine          | File                     | Description   |
+            |----------------|---------|------------------|--------------------------|---------------|
+            | x86_64         | x86_64  | UEFI PC          | `zedbsd-x86_64.img.gz`   | USB image     |
+            | Raspberry Pi 4 | Arm64   | Raspberry Pi 4   | `zedbsd-rpi4.img.gz`     | SD image      |
+            | Raspberry Pi 5 | Arm64   | Raspberry Pi 5   | `zedbsd-rpi5.img.gz`     | SD image      |
+            | VisionFive 2   | RISC-V  | VisionFive 2     | `zedbsd-vf2.img.gz`      | SD image      |
+
+            The installer of the x86_64 image installs `zedbsd-system-x86_64.tar` of a release that is not a prerelease.
+            
+            Retro Targets (X11 or console-only):
+            | Image          | CPU     | Machine          | File                     | Description                   |
+            |----------------|---------|------------------|--------------------------|-------------------------------|
+            | pc9801ns       | i386SX  | PC-9801NS/20     | `zedbsd-pc9801ns.img.gz` | IDE image (Head=4, Sector=17) |
+            | pc9821         | i486DX  | PC-9821          | `zedbsd-pc9821.img.gz`   | IDE image (Head=8, Sector=17) |
+            | macppc32       | PowerPC | PowerPC Mac (G4) | `zedbsd-macppc32.img.gz` | USB image [(How to boot)](https://github.com/awemorris/zedBSD/blob/main/docs/howto/powermac-boot.md) |
+            
+            Windows-ported Apps:
+            | Name        | OS                | Description                                       |
+            |-------------|-------------------|---------------------------------------------------|
+            | mikuterm    | Windows 11 x64    | SSH Terminal for Windows (Micro Unicode Terminal) |
+
+          files: |
+            artifacts/*.img.gz
+            artifacts/zedbsd-system-*.tar
+            app-artifacts/*.zip

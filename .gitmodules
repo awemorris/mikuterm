@@ -1,0 +1,3 @@
+[submodule "external/zedBSD"]
+	path = external/zedBSD
+	url = https://github.com/awemorris/zedBSD.git

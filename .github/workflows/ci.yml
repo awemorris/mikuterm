@@ -60,9 +60,10 @@ jobs:
     needs:
       - build-ubuntu
     steps:
-      - name: Download the disk images
+      - name: Download Windows artifacts
         uses: actions/download-artifact@v4
         with:
+          name: artifacts
           path: artifacts
 
       - name: Create GitHub Release

@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  build-os:
+  build-ubuntu:
     name: Build ${{ matrix.platform }}
     runs-on: ubuntu-24.04
     env:
@@ -34,19 +34,19 @@ jobs:
           tar -xJf "$RUNNER_TEMP/llvm-mingw.tar.xz" -C "$RUNNER_TEMP"
           echo "LLVM_MINGW=$RUNNER_TEMP/$LLVM_MINGW_NAME" >> "$GITHUB_ENV"
 
-      # CMake takes the toolchain file by its absolute path.
       - name: Build
         run: |
-          cmake -S apps/terminal-win32 -B build/mikuterm-x64 -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/apps/terminal-win32/cmake/llvm-mingw-x86_64.cmake" \
-            -DLLVM_MINGW="$LLVM_MINGW"
-          cmake --build build/mikuterm-x64 --target zip -j4
+          make LLVM_MINGW_PATH=$LLVM_MINGW
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: mikuterm-win64
-          path: build/mikuterm-x64/mikuterm-*-win64.zip
+          name: artifacts
+          path: |
+            - build/mikuterm-x64/mikuterm-*-win64.zip
+            - build/mikuterm-x64/mikuterm-*-win64.zip
+            - build/mikuterm-x64/mikuterm-*-win64.zip
+
           if-no-files-found: error
 
   release:
@@ -56,8 +56,7 @@ jobs:
     permissions:
       contents: write
     needs:
-      - build-os
-      - build-apps
+      - build-ubuntu
     steps:
       - name: Download the disk images
         uses: actions/download-artifact@v4

@@ -15,7 +15,7 @@ mikuterm-x86:
 	@echo "Building mikuterm for Windows 11 x86..."
 	rm -rf build/mikuterm-x86
 	cmake -S external/zedBSD/apps/terminal-win32 -B build/mikuterm-x86 -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_TOOLCHAIN_FILE=cmake/llvm-mingw-x86.cmake -DLLVM_MINGW=$(LLVM_MINGW_PATH)
-	cmake --build build/mikuterm-x64 --target zip
+	cmake --build build/mikuterm-x86 --target zip
 
 mikuterm-arm64:
 	@echo "Building mikuterm for Windows 11 arm64..."

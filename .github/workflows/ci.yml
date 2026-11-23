@@ -46,9 +46,9 @@ jobs:
         with:
           name: artifacts
           path: |
-            - mikuterm-x64.zip
-            - mikuterm-arm64.zip
-            - mikuterm-x86.zip
+            mikuterm-x64.zip
+            mikuterm-arm64.zip
+            mikuterm-x86.zip
           if-no-files-found: error
 
   release:

@@ -63,7 +63,6 @@ jobs:
       - name: Download the disk images
         uses: actions/download-artifact@v4
         with:
-          pattern: *.zip
           merge-multiple: true
           path: artifacts
 

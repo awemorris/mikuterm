@@ -45,7 +45,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: artifacts
-          path: *.zip
+          path: |
+            - mikuterm-x64.zip
+            - mikuterm-arm64.zip
+            - mikuterm-x86.zip
           if-no-files-found: error
 
   release:

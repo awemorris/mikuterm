@@ -24,8 +24,8 @@ server, and an SFTP client.
   <p>mikuterm is running the settings tab on Android tablet</p>
   <img src="docs/img/screenshot6.png" alt="mikuterm is running the settings tab on Android tablet" width="85%"><br>
   <hr>
-  <p>mikuterm has q quick start menu for WSL and GitHub Codespaces</p>
-  <img src="docs/img/screenshot7.png" alt="mikuterm has q quick start menu for WSL and GitHub Codespaces" width="85%"><br>
+  <p>mikuterm has a quick start menu for WSL and GitHub Codespaces</p>
+  <img src="docs/img/screenshot7.png" alt="mikuterm has a quick start menu for WSL and GitHub Codespaces" width="85%"><br>
   <hr>
   <p>mikuterm is running SFTP client tab</p>
   <img src="docs/img/screenshot8.png" alt="mikuterm is running SFTP client tab" width="85%"><br>

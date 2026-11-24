@@ -13,7 +13,7 @@ permissions:
 jobs:
   build-ubuntu:
     name: Build ${{ matrix.platform }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     env:
       LLVM_MINGW_TAG: "20261104"
       LLVM_MINGW_NAME: "llvm-mingw-20261104-ucrt-ubuntu-22.04-x86_64"
@@ -69,13 +69,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build zip
 
-      - name: Set up Android SDK and NDK
-        uses: android-actions/setup-android@v3
-
       - name: Install Android platform, build-tools, and NDK r28
         run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager "platforms;android-35" "build-tools;35.0.0" "ndk;28.2.13676358"
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          SDKMANAGER=$(command -v sdkmanager || ls -1 "$SDK_ROOT"/cmdline-tools/*/bin/sdkmanager | sort -V | tail -n 1)
+          yes | "$SDKMANAGER" --sdk_root="$SDK_ROOT" --licenses > /dev/null || true
+          "$SDKMANAGER" --sdk_root="$SDK_ROOT" "platforms;android-35" "build-tools;35.0.0" "ndk;28.2.13676358"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
 
       - name: Build APK
         env:

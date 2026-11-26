@@ -1,9 +1,11 @@
 mikuterm
 ========
 
-`mikuterm` (Micro Unicode Terminal) is an SSH terminal for Windows,
-featuring a Vulkan-accelerated rendering, a tab-based X11 forwarding
-server, and an SFTP client.
+`mikuterm` (Micro Unicode Terminal) is a versatile terminal app for
+Windows and Android. It features an SSH terminal, a tab-based X11
+forwarding server, a graphical SFTP client, an RDP client, and an
+RDP-based zero-config remote display called `DisplaySink`. All
+Vulkan-accelerated!
 
 <div align="center">
   <p>mikuterm is running SSH terminal and X11 server on Windows (windowed wm mode)</p>
